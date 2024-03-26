@@ -78,7 +78,7 @@ ArbolEstimarGanancia <- function(semilla, param_basicos) {
 #------------------------------------------------------------------------------
 
 # Aqui se debe poner la carpeta de la computadora local
-setwd("E:\\documentos\\labo1\\") # Establezco el Working Directory
+setwd("C:\\Users\\feder\\OneDrive\\Documents\\labo1")# Establezco el Working Directory
 # cargo los datos
 
 # cargo los datos

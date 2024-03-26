@@ -33,7 +33,7 @@ particionar <- function(
 
 # Aqui se debe poner la carpeta de la computadora local
 # Establezco el Working Directory
-setwd("E:\\documentos\\labo1\\")
+setwd("C:\\Users\\feder\\OneDrive\\Documents\\labo1")
 
 # cargo los datos
 dataset <- fread("./datasets/dataset_pequeno.csv")
