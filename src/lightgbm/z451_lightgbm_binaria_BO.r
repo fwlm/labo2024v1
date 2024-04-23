@@ -1,4 +1,4 @@
-# Este script esta pensado para correr en Google Cloud
+es que# Este script esta pensado para correr en Google Cloud
 
 # se entrena con clase_binaria2  POS =  { BAJA+1, BAJA+2 }
 # Optimizacion Bayesiana de hiperparametros de  lightgbm,
@@ -327,6 +327,3 @@ if (!file.exists(kbayesiana)) {
 } else {
   run <- mboContinue(kbayesiana) # retomo en caso que ya exista
 }
-
-
-cat("\n\nLa optimizacion Bayesiana ha terminado\n")
