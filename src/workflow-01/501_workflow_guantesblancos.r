@@ -132,7 +132,7 @@ FE_historia_guantesblancos <- function( pmyexp, pinputexps, pserver="local")
   param_local$lag3 <- FALSE # no me engraso con los lags de orden 3
 
   # no me engraso las manos con las tendencias
-  param_local$Tendencias1$run <- FALSE  # FALSE, no corre nada de lo que sigue
+  param_local$Tendencias1$run <- TRUE  # FALSE, no corre nada de lo que sigue
   param_local$Tendencias1$ventana <- 6
   param_local$Tendencias1$tendencia <- TRUE
   param_local$Tendencias1$minimo <- FALSE
@@ -154,7 +154,7 @@ FE_historia_guantesblancos <- function( pmyexp, pinputexps, pserver="local")
 
   # No me engraso las manos con las variables nuevas agregadas por un RF
   # esta parte demora mucho tiempo en correr, y estoy en modo manos_limpias
-  param_local$RandomForest$run <- FALSE
+  param_local$RandomForest$run <- TRUE
   param_local$RandomForest$num.trees <- 20
   param_local$RandomForest$max.depth <- 4
   param_local$RandomForest$min.node.size <- 1000
@@ -181,16 +181,16 @@ TS_strategy_guantesblancos_202109 <- function( pmyexp, pinputexps, pserver="loca
 
 
   param_local$future <- c(202109)
-  param_local$final_train <- c(202107, 202106, 202105)
+  param_local$final_train <- c(202107, 202106, 202105, 202104, 202103, 202102, 202101, 202012, 202011)
 
 
-  param_local$train$training <- c(202105, 202104, 202103)
+  param_local$train$training <- c(202105, 202104, 202103, 202102, 202101, 202012, 202011, 202010, 202009)
   param_local$train$validation <- c(202106)
   param_local$train$testing <- c(202107)
 
   # Atencion  0.1  de  undersampling de la clase mayoritaria,  los CONTINUA
   # 1.0 significa NO undersampling ,  0.1  es quedarse con el 10% de los CONTINUA
-  param_local$train$undersampling <- 0.1
+  param_local$train$undersampling <- 0.2
 
   return( exp_correr_script( param_local ) ) # linea fija
 }
@@ -207,21 +207,16 @@ TS_strategy_guantesblancos_202107 <- function( pmyexp, pinputexps, pserver="loca
 
 
   param_local$future <- c(202107)
-  param_local$final_train <- c(202105, 202104, 202103, 202102, 202101, 
-        202012, 202011, 202010, 202009, 202008, 202007, 202006, 202005, 202004, 202003, 202002, 202001, 
-        201912, 201911, 201910, 201909, 201908, 201907)
+  param_local$final_train <- c(202105, 202104, 202103, 202102, 202101, 202012, 202011, 202010, 202009)
 
 
-  param_local$train$training <- c(202103, 202102, 202101, 
-        202012, 202011, 202010, 202009, 202008, 202007, 202006, 202005, 202004, 202003, 202002, 202001,
-        201912, 201911, 201910, 201909, 201908, 201907, 201906, 201905)
-  
+  param_local$train$training <- c(202103, 202102, 202101, 202012, 202011, 202010, 202009, 202008, 202007)
   param_local$train$validation <- c(202104)
   param_local$train$testing <- c(202105)
 
   # Atencion  0.1  de  undersampling de la clase mayoritaria,  los CONTINUA
   # 1.0 significa NO undersampling ,  0.1  es quedarse con el 10% de los CONTINUA
-  param_local$train$undersampling <- 0.1
+  param_local$train$undersampling <- 0.2
 
   return( exp_correr_script( param_local ) ) # linea fija
 }
@@ -307,7 +302,7 @@ ZZ_final_guantesblancos <- function( pmyexp, pinputexps, pserver="local")
   param_local$graficar$ventana_suavizado <- 2001L
 
   # Una corrida de Guantes Blancos solo usa 5 semillas
-  param_local$qsemillas <- 20
+  param_local$qsemillas <- 5
 
   return( exp_correr_script( param_local ) ) # linea fija
 }
@@ -323,18 +318,18 @@ corrida_guantesblancos_202109 <- function( pnombrewf, pvirgen=FALSE )
 {
   if( -1 == exp_wf_init( pnombrewf, pvirgen) ) return(0) # linea fija
 
-  DT_incorporar_dataset_default( "DT0001_1", "competencia_2024.csv.gz")
-  CA_catastrophe_default( "CA0001_1", "DT0001_1" )
+  DT_incorporar_dataset_default( "DT0001", "competencia_2024.csv.gz")
+  CA_catastrophe_default( "CA0001", "DT0001" )
 
-  DR_drifting_guantesblancos( "DR0001_1", "CA0001_1" )
-  FE_historia_guantesblancos( "FE0001_1", "DR0001_1" )
+  DR_drifting_guantesblancos( "DR0001", "CA0001" )
+  FE_historia_guantesblancos( "FE0001", "DR0001" )
 
-  TS_strategy_guantesblancos_202109( "TS0001_1", "FE0001_1" )
+  TS_strategy_guantesblancos_202109( "TS0001", "FE0001" )
 
-  HT_tuning_guantesblancos( "HT0001_1", "TS0001_1" )
+  HT_tuning_guantesblancos( "HT0001", "TS0001" )
 
   # El ZZ depente de HT y TS
-  ZZ_final_guantesblancos( "ZZ0001_1", c("HT0001_1","TS0001_1") )
+  ZZ_final_guantesblancos( "ZZ0001", c("HT0001","TS0001") )
 
 
   exp_wf_end( pnombrewf, pvirgen ) # linea fija
@@ -351,12 +346,12 @@ corrida_guantesblancos_202107 <- function( pnombrewf, pvirgen=FALSE )
   if( -1 == exp_wf_init( pnombrewf, pvirgen) ) return(0) # linea fija
 
   # Ya tengo corrido FE0001 y parto de alli
-  TS_strategy_guantesblancos_202107( "TS0002_1", "FE0001_1" )
+  TS_strategy_guantesblancos_202107( "TS0002", "FE0001" )
 
-  HT_tuning_guantesblancos( "HT0002_1", "TS0002_1" )
+  HT_tuning_guantesblancos( "HT0002", "TS0002" )
 
   # El ZZ depente de HT y TS
-  ZZ_final_guantesblancos( "ZZ0002_1", c("HT0002_1", "TS0002_1") )
+  ZZ_final_guantesblancos( "ZZ0002", c("HT0002", "TS0002") )
 
 
   exp_wf_end( pnombrewf, pvirgen ) # linea fija
@@ -368,12 +363,12 @@ corrida_guantesblancos_202107 <- function( pnombrewf, pvirgen=FALSE )
 
 # Hago primero esta corrida que me genera los experimentos
 # DT0001, CA0001, DR0001, FE0001, TS0001, HT0001 y ZZ0001
-corrida_guantesblancos_202109( "gb01" )
+corrida_guantesblancos_202109( "EXP-" )
 
 
 # Luego partiendo de  FE0001
 # genero TS0002, HT0002 y ZZ0002
 
-corrida_guantesblancos_202107( "gb02" )
+corrida_guantesblancos_202107( "EXP" )
 
 cat("\n\nLa optimizacion Bayesiana ha terminado\n")
