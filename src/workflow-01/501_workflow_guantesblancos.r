@@ -107,7 +107,7 @@ DR_drifting_guantesblancos <- function( pmyexp, pinputexps, pserver="local")
   param_local$meta$script <- "/src/workflow-01/z531_DR_corregir_drifting.r"
 
   # No me engraso las manos con Feature Engineering manual
-  param_local$variables_intrames <- FALSE
+  param_local$variables_intrames <- TRUE
   # valores posibles
   #  "ninguno", "rank_simple", "rank_cero_fijo", "deflacion", "estandarizar"
   param_local$metodo <- "rank_cero_fijo"
@@ -268,15 +268,15 @@ HT_tuning_guantesblancos <- function( pmyexp, pinputexps, pserver="local")
 
     extra_trees = FALSE,
     # White Gloves Bayesian Optimization, with a happy narrow exploration
-    learning_rate = 1,
-    feature_fraction = c( 0.4, 0.65 ),
-    num_leaves = 6L,
+    learning_rate = c( 0.01, 0.5 ),
+    feature_fraction = c( 0.5, 0.9 ),
+    num_leaves = c( 8L, 2048L,  "integer" ),
     min_data_in_leaf = c( 100L, 2000L, "integer" )
   )
 
 
   # una Beyesian de Guantes Blancos, solo hace 15 iteraciones
-  param_local$bo_iteraciones <- 15 # iteraciones de la Optimizacion Bayesiana
+  param_local$bo_iteraciones <- 50 # iteraciones de la Optimizacion Bayesiana
 
   return( exp_correr_script( param_local ) ) # linea fija
 }
@@ -292,7 +292,7 @@ ZZ_final_guantesblancos <- function( pmyexp, pinputexps, pserver="local")
   # Que modelos quiero, segun su posicion en el ranking e la Bayesian Optimizacion, ordenado por ganancia descendente
   param_local$modelos_rank <- c(1)
 
-  param_local$kaggle$envios_desde <-  9500L
+  param_local$kaggle$envios_desde <-  8500L
   param_local$kaggle$envios_hasta <- 11500L
   param_local$kaggle$envios_salto <-   500L
 
@@ -363,7 +363,7 @@ corrida_guantesblancos_202107 <- function( pnombrewf, pvirgen=FALSE )
 
 # Hago primero esta corrida que me genera los experimentos
 # DT0001, CA0001, DR0001, FE0001, TS0001, HT0001 y ZZ0001
-corrida_guantesblancos_202109( "EXP-" )
+corrida_guantesblancos_202109( "EXP" )
 
 
 # Luego partiendo de  FE0001
