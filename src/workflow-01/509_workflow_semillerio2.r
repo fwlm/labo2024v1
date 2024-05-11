@@ -1,5 +1,4 @@
 # Corrida general del Workflow de semillerio
-# Modificado para omitir HT y reemplazar el contenido de BO.log con un parámetro conveniente para mi caso
 
 # limpio la memoria
 rm(list = ls(all.names = TRUE)) # remove all objects
@@ -242,16 +241,15 @@ HT_tuning_baseline <- function( pmyexp, pinputexps, pserver="local")
 
     extra_trees = FALSE,
     # Quasi  baseline, el minimo learning_rate es 0.02 !!
-    #hiperparámetros de prueba de la peor bayesiana, la 42
-    learning_rate = 0.01,
-    feature_fraction = c( 0.66, 0.661 ),
-    num_leaves = c( 8L, 8L,  "integer" ),
-    min_data_in_leaf = c( 100L, 101L, "integer" )
+    learning_rate = c( 0.01, 0.5 ),
+    feature_fraction = c( 0.5, 0.9 ),
+    num_leaves = c( 8L, 2048L,  "integer" ),
+    min_data_in_leaf = c( 100L, 2000L, "integer" )
   )
 
 
   # una Beyesian de Guantes Blancos, solo hace 15 iteraciones
-  param_local$bo_iteraciones <- 1 # iteraciones de la Optimizacion Bayesiana
+  param_local$bo_iteraciones <- 50 # iteraciones de la Optimizacion Bayesiana
 
   return( exp_correr_script( param_local ) ) # linea fija
 }
@@ -284,22 +282,14 @@ ZZ_final_baseline <- function( pmyexp, pinputexps, pserver="local")
 #------------------------------------------------------------------------------
 # proceso ZZ_final  baseline
 
-ZZ_final_semillerio_baseline <- function( pmyexp, pinputexps,hiperparametros, future_con_clase, pserver="local")
+ZZ_final_semillerio_baseline_2019 <- function( pmyexp, pinputexps, pserver="local")
 {
   if( -1 == (param_local <- exp_init( pmyexp, pinputexps, pserver ))$resultado ) return( 0 )# linea fija
 
-  #cambio por la versión modificada de ZZ_final
-  param_local$meta$script <- "/src/workflow-01/881_ZZ_final_semillerio.r"
+  param_local$meta$script <- "/src/workflow-01/z881_ZZ_final_semillerio.r"
 
   # Que modelos quiero, segun su posicion en el ranking e la Bayesian Optimizacion, ordenado por ganancia descendente
-  param_local$modelos_rank <- c(1) #finalmente va a quedar una sola línea así que cualquier ganancia que tenga va a ser lo que use.
-
-  param_local$hiperparametros <- hiperparametros
-
-  param_local$future_con_clase <- future_con_clase
-
-  #print("hiperparametros")
-  #print(hiperparametros)
+  param_local$modelos_rank <- c(1)
 
   param_local$kaggle$envios_desde <-  9500L
   param_local$kaggle$envios_hasta <- 11500L
@@ -312,11 +302,33 @@ ZZ_final_semillerio_baseline <- function( pmyexp, pinputexps,hiperparametros, fu
 
   # El parametro fundamental de semillerio
   # Es la cantidad de LightGBM's que ensamblo
-  #param_local$semillerio <- 20
-  #pongo 5 semillas por velocidad, luego ver de parametrizar
-  #derminar con un test de wilcox cuál sería el número mínimo para mantener el poder predictivo
-  param_local$semillerio <- 20 #5 
+  param_local$semillerio <- 5
 
+  return( exp_correr_script( param_local ) ) # linea fija
+}
+
+ZZ_final_semillerio_baseline_2017 <- function( pmyexp, pinputexps, pserver="local")
+{
+  if( -1 == (param_local <- exp_init( pmyexp, pinputexps, pserver ))$resultado ) return( 0 )# linea fija
+  
+  param_local$meta$script <- "/src/workflow-01/z881_ZZ_final_semillerio2.r"
+  
+  # Que modelos quiero, segun su posicion en el ranking e la Bayesian Optimizacion, ordenado por ganancia descendente
+  param_local$modelos_rank <- c(1)
+  
+  param_local$kaggle$envios_desde <-  9500L
+  param_local$kaggle$envios_hasta <- 11500L
+  param_local$kaggle$envios_salto <-   500L
+  
+  # para el caso que deba graficar
+  param_local$graficar$envios_desde <-  8000L
+  param_local$graficar$envios_hasta <- 20000L
+  param_local$graficar$ventana_suavizado <- 2001L
+  
+  # El parametro fundamental de semillerio
+  # Es la cantidad de LightGBM's que ensamblo
+  param_local$semillerio <- 5
+  
   return( exp_correr_script( param_local ) ) # linea fija
 }
 #------------------------------------------------------------------------------
@@ -332,35 +344,19 @@ corrida_baseline_semillerio_202109 <- function( pnombrewf, pvirgen=FALSE )
 {
   if( -1 == exp_wf_init( pnombrewf, pvirgen) ) return(0) # linea fija
 
-  #DT_incorporar_dataset_baseline( "DT0001-sem", "competencia_2024.csv.gz")
-  #CA_catastrophe_baseline( "CA0001-sem", "DT0001-sem" )
-#
-  #DR_drifting_baseline( "DR0001-sem", "CA0001-sem" )
-  #FE_historia_baseline( "FE0001-sem", "DR0001-sem" )
-#
-  #TS_strategy_baseline_202109( "TS0001-sem", "FE0001-sem" )
+  DT_incorporar_dataset_baseline( "DT0001-sem", "competencia_2024.csv.gz")
+  CA_catastrophe_baseline( "CA0001-sem", "DT0001-sem" )
 
-#  HT_tuning_baseline( "HT0001-sem-01e", "TS0001-sem" )
+  DR_drifting_baseline( "DR0001-sem", "CA0001-sem" )
+  FE_historia_baseline( "FE0001-sem", "DR0001-sem" )
+
+  TS_strategy_baseline_202109( "TS0001-sem", "FE0001-sem" )
+
+  HT_tuning_baseline( "HT0001-sem", "TS0001-sem" )
 
   # El ZZ depente de HT y TS
-  #aquí debería inyectar los malos parámetros en BO.log con una ganancia extraordinaria
-  #HT0001-sem-01-zz es la copia de algún HT previo que funcionó en el que inyectaré la última línea de BO.log con un parámetro conveniente, debe copiarse manualmente con
-  #cp -rp ~/buckets/b1/exp/HT0001-sem ~/buckets/b1/exp/HT0001-sem-01-zz
-  #ZZ_final_semillerio_baseline( "ZZ0001-sem-01-zz-00", c("HT0001-sem-01-zz","TS0001-sem") )
+  ZZ_final_semillerio_baseline_2019( "ZZ0001-sem-final-1", c("HT0001-sem","TS0001-sem") )
 
-  # Leer las configuraciones subóptimas del archivo
-  configuraciones_suboptimas <- fread("~/labo2024v1/src/workflow-01/BO_log_suboptimos.txt")
-
-  # Iterar sobre las configuraciones y llamar a ZZ_final_semillerio_baseline
-  for (i in 1:nrow(configuraciones_suboptimas)) {
-    # Llamar a ZZ_final_semillerio_baseline con la configuración subóptima
-    nombre_experimento <- paste0("ZZ0001-sem-fijo-01-", i)
-    ZZ_final_semillerio_baseline(nombre_experimento,
-     c("HT0001-sem-01-zz","TS0001-sem"),
-     hiperparametros = configuraciones_suboptimas[i, ],
-     future_con_clase = FALSE
-    )
-  }  
 
   exp_wf_end( pnombrewf, pvirgen ) # linea fija
 }
@@ -376,36 +372,19 @@ corrida_baseline_semillerio_202107 <- function( pnombrewf, pvirgen=FALSE )
 {
   if( -1 == exp_wf_init( pnombrewf, pvirgen) ) return(0) # linea fija
 
-  #DT_incorporar_dataset_baseline( "DT0001-sem", "competencia_2024.csv.gz")
-  #CA_catastrophe_baseline( "CA0001-sem", "DT0001-sem" )
-#
-  #DR_drifting_baseline( "DR0001-sem", "CA0001-sem" )
-  #FE_historia_baseline( "FE0001-sem", "DR0001-sem" )
-#
-  #TS_strategy_baseline_202107( "TS0002-sem", "FE0001-sem" )
+  DT_incorporar_dataset_baseline( "DT0001-sem", "competencia_2024.csv.gz")
+  CA_catastrophe_baseline( "CA0001-sem", "DT0001-sem" )
 
-  #HT_tuning_baseline( "HT0002-sem-02e", "TS0002-sem" )
+  DR_drifting_baseline( "DR0001-sem", "CA0001-sem" )
+  FE_historia_baseline( "FE0001-sem", "DR0001-sem" )
+
+  TS_strategy_baseline_202107( "TS0002-sem", "FE0001-sem" )
+
+  HT_tuning_baseline( "HT0002-sem", "TS0002-sem" )
 
   # El ZZ depente de HT y TS
-  #aquí debería inyectar los malos parámetros en BO.log con una ganancia extraordinaria
-  #HT0002-sem-02-zz es la copia de algún HT previo que funcionó en el que inyectaré la última línea de BO.log con un parámetro conveniente, debe copiarse manualmente con
-  #cp -rp ~/buckets/b1/exp/HT0002-sem-02 ~/buckets/b1/exp/HT0002-sem-02-zz
+  ZZ_final_semillerio_baseline_2017( "ZZ0002-sem-final-2", c("HT0002-sem","TS0002-sem") )
 
-  #ZZ_final_semillerio_baseline( "ZZ0002-sem-02-zz-00", c("HT0002-sem-02-zz","TS0002-sem") )
-
-  # Leer las configuraciones subóptimas del archivo
-  configuraciones_suboptimas <- fread("~/labo2024v1/src/workflow-01/BO_log_suboptimos.txt")
-
-  # Iterar sobre las configuraciones y llamar a ZZ_final_semillerio_baseline
-  for (i in 1:nrow(configuraciones_suboptimas)) {
-    # Llamar a ZZ_final_semillerio_baseline con la configuración subóptima
-    nombre_experimento <- paste0("ZZ0002-sem-fijo-01-", i)
-    ZZ_final_semillerio_baseline(nombre_experimento,
-     c("HT0002-sem-02-zz","TS0002-sem"),
-     hiperparametros = configuraciones_suboptimas[i, ],
-     future_con_clase = TRUE
-    )
-  }  
 
   exp_wf_end( pnombrewf, pvirgen ) # linea fija
 }
@@ -415,14 +394,12 @@ corrida_baseline_semillerio_202107 <- function( pnombrewf, pvirgen=FALSE )
 #Aqui empieza el programa
 
 
-corrida_baseline_semillerio_202109( "basem01-zz-01" )
+corrida_baseline_semillerio_202109( "basem01-final-1" )
 
 
 # Luego partiendo de  FE0001
 # genero TS0002, HT0002 y ZZ0002
 
-corrida_baseline_semillerio_202107( "basem02-zz-01" )
+corrida_baseline_semillerio_202107( "basem02-final-2" )
 
 cat("\n\nCorrida terminada\n")
-
- 
