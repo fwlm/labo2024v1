@@ -162,15 +162,18 @@ TS_strategy_baseline_202109 <- function( pmyexp, pinputexps, pserver="local")
 
 
   param_local$future <- c(202109)
-  param_local$final_train <- c(202107, 202106, 202105, 202104, 202103, 202102, 202101, 202012, 202011)
+  param_local$train$training <- c(201905,201906,201907,201908,201909,201910,201911,201912,202001,202002,202003,202011,202012,202101,
+                                  202102, 202103,202104,202105, 202106, 202107)
 
-
-  param_local$train$training <- c(202105, 202104, 202103, 202102, 202101, 202012, 202011, 202010, 202009)
+  param_local$train$training <- c(202103,202104,201905,201906,201907,201908,201909,201910,201911,201912,202001,202002,202003,202011,202012,202101,
+                                  202102, 202103,202104,202105)
+  
   param_local$train$validation <- c(202106)
   param_local$train$testing <- c(202107)
-
+  
+  
   # undersampling  baseline
-  param_local$train$undersampling <- 0.2
+  param_local$train$undersampling <- 0.3
 
   return( exp_correr_script( param_local ) ) # linea fija
 }
@@ -242,7 +245,7 @@ HT_tuning_baseline <- function( pmyexp, pinputexps, pserver="local")
 
     extra_trees = FALSE,
     # Quasi  baseline, el minimo learning_rate es 0.02 !!
-    learning_rate = c( 0.01, 0.5 ),
+    learning_rate = c( 0.02, 0.5 ),
     feature_fraction = c( 0.5, 0.9 ),
     num_leaves = c( 8L, 2048L,  "integer" ),
     min_data_in_leaf = c( 100L, 2000L, "integer" )
@@ -250,7 +253,7 @@ HT_tuning_baseline <- function( pmyexp, pinputexps, pserver="local")
 
 
   # una Beyesian de Guantes Blancos, solo hace 15 iteraciones
-  param_local$bo_iteraciones <- 50 # iteraciones de la Optimizacion Bayesiana
+  param_local$bo_iteraciones <- 100 # iteraciones de la Optimizacion Bayesiana
 
   return( exp_correr_script( param_local ) ) # linea fija
 }
@@ -266,8 +269,8 @@ ZZ_final_baseline <- function( pmyexp, pinputexps, pserver="local")
   # Que modelos quiero, segun su posicion en el ranking e la Bayesian Optimizacion, ordenado por ganancia descendente
   param_local$modelos_rank <- c(1)
 
-  param_local$kaggle$envios_desde <-  9500L
-  param_local$kaggle$envios_hasta <- 11500L
+  param_local$kaggle$envios_desde <-  10000L
+  param_local$kaggle$envios_hasta <- 14500L
   param_local$kaggle$envios_salto <-   500L
 
   # para el caso que deba graficar
@@ -292,8 +295,8 @@ ZZ_final_semillerio_baseline <- function( pmyexp, pinputexps, pserver="local")
   # Que modelos quiero, segun su posicion en el ranking e la Bayesian Optimizacion, ordenado por ganancia descendente
   param_local$modelos_rank <- c(1)
 
-  param_local$kaggle$envios_desde <-  9500L
-  param_local$kaggle$envios_hasta <- 11500L
+  param_local$kaggle$envios_desde <-  10000L
+  param_local$kaggle$envios_hasta <- 14500L
   param_local$kaggle$envios_salto <-   500L
 
   # para el caso que deba graficar
@@ -320,18 +323,18 @@ corrida_baseline_semillerio_202109 <- function( pnombrewf, pvirgen=FALSE )
 {
   if( -1 == exp_wf_init( pnombrewf, pvirgen) ) return(0) # linea fija
 
-  DT_incorporar_dataset_baseline( "DT0001-sem", "competencia_2024.csv.gz")
-  CA_catastrophe_baseline( "CA0001-sem", "DT0001-sem" )
+  DT_incorporar_dataset_baseline( "DT0001-sem-FINAL-1", "competencia_2024.csv.gz")
+  CA_catastrophe_baseline( "CA0001-sem-FINAL-1", "DT0001-sem-FINAL-1" )
 
-  DR_drifting_baseline( "DR0001-sem", "CA0001-sem" )
-  FE_historia_baseline( "FE0001-sem", "DR0001-sem" )
+  DR_drifting_baseline( "DR0001-sem-FINAL-1", "CA0001-sem-FINAL-1" )
+  FE_historia_baseline( "FE0001-sem-FINAL-1", "DR0001-sem-FINAL-1" )
 
-  TS_strategy_baseline_202109( "TS0001-sem", "FE0001-sem" )
+  TS_strategy_baseline_202109( "TS0001-sem-FINAL-1", "FE0001-sem-FINAL-1" )
 
-  HT_tuning_baseline( "HT0001-sem", "TS0001-sem" )
+  HT_tuning_baseline( "HT0001-sem-FINAL-1", "TS0001-sem-FINAL-1" )
 
   # El ZZ depente de HT y TS
-  ZZ_final_semillerio_baseline( "ZZ0001-sem", c("HT0001-sem","TS0001-sem") )
+  ZZ_final_semillerio_baseline( "ZZ0001-sem-FINAL-1", c("HT0001-sem-FINAL-1","TS0001-sem-FINAL-1") )
 
 
   exp_wf_end( pnombrewf, pvirgen ) # linea fija
@@ -370,12 +373,12 @@ corrida_baseline_semillerio_202107 <- function( pnombrewf, pvirgen=FALSE )
 #Aqui empieza el programa
 
 
-corrida_baseline_semillerio_202109( "basem01" )
+corrida_baseline_semillerio_202109( "basem01-entrega-1" )
 
 
 # Luego partiendo de  FE0001
 # genero TS0002, HT0002 y ZZ0002
 
-corrida_baseline_semillerio_202107( "basem02" )
+#corrida_baseline_semillerio_202107( "basem02" )
 
  
